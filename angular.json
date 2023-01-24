@@ -13,7 +13,10 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/map-api",
+            "allowedCommonJsDependencies": [
+              "ngx-google-places-autocomplete"
+            ],
+            "outputPath": "dist/angular-google-places-autocomplete",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": [

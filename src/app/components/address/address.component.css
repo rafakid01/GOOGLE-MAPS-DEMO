@@ -1,0 +1,8 @@
+input:focus {
+    box-shadow: none;
+    border: 1px solid grey;
+}
+
+.form-floating div{
+    margin: .25em 0;
+}   

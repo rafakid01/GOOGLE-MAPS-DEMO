@@ -1,0 +1,72 @@
+<div class="container">
+    <div class="row my-3 justify-content-center">
+        <div class="col-8">
+            <form action="" class="row" (submit)="getAddressData()" [formGroup]="addressForm">
+                <div class="row justify-content-between p-0 form-floating">
+                    <div class="col-9">
+                        <div class="form-floating">
+                            <input autocomplete="false" type="text" class="form-control" placeholder="Insira o endereço"
+                                id="addressInput" ngx-google-places-autocomplete [options]="options"
+                                (onAddressChange)="handleAddressChange($event)">
+                            <label for="addressInput">
+                                Insira o endereço
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <input autocomplete="false" type="text" id="numberAddressInput" placeholder="Número"
+                                class="form-control" formControlName="numberQuery">
+                            <label for="numberAddressInput">Número</label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input autocomplete="false" type="text" id="streetAddressInput" placeholder="Rua"
+                                class="form-control" formControlName="numberQuery">
+                            <label for="streetAddressInput">Rua</label>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="form-floating">
+                            <input autocomplete="false" type="text" placeholder="Número" class="form-control">
+                            <label for="">Número</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-floating">
+                            <input autocomplete="false" class="form-control" placeholder="Complemento" type="text">
+                            <label for="">Complemento</label>
+                        </div>
+                    </div>
+                    <!-- <h4>
+                        {{fullAddress?.address_components[0].long_name}}
+                    </h4> -->
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input autocomplete="false" type="text" placeholder="Bairro" class="form-control">
+                            <label for="">Bairro</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-floating">
+                            <input autocomplete="false" type="text" placeholder="Cidade" class="form-control">
+                            <label for="">Cidade</label>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="form-floating">
+                            <input autocomplete="false" type="text" placeholder="Estado" class="form-control">
+                            <label for="">Estado</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center px-0 py-4">
+                    <button type="submit" class="btn btn-outline-success col-4" [disabled]="!addressForm.valid">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
