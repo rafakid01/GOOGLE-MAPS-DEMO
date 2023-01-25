@@ -3,6 +3,20 @@ input:focus {
     border: 1px solid grey;
 }
 
-.form-floating div{
+.form-floating div {
     margin: .25em 0;
-}   
+}
+
+.ng-invalid:not(form, div) {
+    border-left: 5px solid red;
+}
+
+.clean-input-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.clean-input-btn button {
+    padding: .2em;
+}

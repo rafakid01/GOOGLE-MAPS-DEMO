@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, Renderer2 } from '@angular/core';
 import { Address } from 'ngx-google-places-autocomplete/objects/address';
 import { FormBuilder, Validators } from '@angular/forms'
+import { OnInit } from '@angular/core';
+import { Call } from '@angular/compiler';
 
 @Component({
   selector: 'app-address',
@@ -13,48 +15,81 @@ export class AddressComponent {
   }
   initAddress: any;
   fullAddress: any;
+  addressForm: any;
+  formattedAddress: string;
 
   constructor(
-    private formBuilder: FormBuilder
-  ) { }
+    private formBuilder: FormBuilder,
+    private renderer: Renderer2
+  ) {
+    this.formattedAddress = "";
+  }
 
-  addressForm = this.formBuilder.group({
-    numberQuery: ["", [Validators.required]],
-    street: [""],
-    numberFinal: [""],
-    complement: [""],
-    district: [""],
-    city: [""],
-    state: [""],
-  })
+  ngOnInit() {
+    this.createInitForm()
+  }
+
+  createInitForm() {
+    this.addressForm = this.formBuilder.group({
+      numberQuery: [{ value: "", disabled: true }, [Validators.required]],
+      street: [{ value: "", disabled: true }, [Validators.required]],
+      numberFinal: [{ value: "", disabled: true }, [Validators.required]],
+      complement: [{ value: "", disabled: true }],
+      district: [{ value: "", disabled: true }, [Validators.required]],
+      city: [{ value: "", disabled: true }, [Validators.required]],
+      state: [{ value: "", disabled: true }, [Validators.required]],
+    })
+  }
+
+  cleanAddressInput() {
+    let addressHTMLInput: any = document.getElementById("addressInput");
+    addressHTMLInput.value = "";
+    this.fullAddress = null;
+    this.renderer.selectRootElement("#addressInput").focus();
+  }
+
+  verifyEmptyInput() {
+    let addressHTMLInput: any = document.getElementById("addressInput");
+    if (addressHTMLInput?.value == "") {
+      this.fullAddress = null;
+    }
+  }
 
   handleAddressChange(address: Address) {
-    this.initAddress = address.address_components;
+    this.verifyQueryError(address);
   }
 
-  getFullAddress() {
-    if (this.initAddress?.length == 6) {
-      this.insertNumberInAddress();
+  verifyQueryError(addressToVerify: Address) {
+    if (addressToVerify.address_components.length == 7) {
+      this.formattedAddress = addressToVerify.formatted_address;
+      this.fullAddress = null;
+      this.fullAddress = addressToVerify.address_components;
+      this.callFinalizeFunctions();
+    } else {
+      this.throwNewError();
     }
-    this.transformFullAddress();
   }
 
-  insertNumberInAddress() {
-    this.initAddress.shift();
-    this.initAddress.unshift({
-      long_name: this.addressForm.get("numberQuery")?.value,
-      short_name: this.addressForm.get("numberQuery")?.value,
-      types: ["street_number"]
-    });
+  throwNewError() {
+    this.fullAddress = null;
+    throw new Error("Endereço Inválido, insira novamente");
   }
 
-  transformFullAddress() {
-    this.fullAddress = this.initAddress;
+  callFinalizeFunctions() {
+    this.transferAddressDataToForm();
+    this.enableComplementInput();
+    console.log(this.fullAddress)
   }
 
-  getAddressData() {
-    this.getFullAddress();
-    console.log(this.fullAddress);
-    console.log(this.addressForm);
+  transferAddressDataToForm() {
+    this.addressForm.get("street").setValue(this.fullAddress[1].long_name)
+    this.addressForm.get("numberFinal").setValue(this.fullAddress[0].long_name)
+    this.addressForm.get("district").setValue(this.fullAddress[2].long_name)
+    this.addressForm.get("city").setValue(this.fullAddress[3].long_name)
+    this.addressForm.get("state").setValue(this.fullAddress[4].short_name)
+  }
+
+  enableComplementInput() {
+    this.addressForm.get("complement").enable();
   }
 }
