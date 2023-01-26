@@ -2,6 +2,7 @@ import { Component, Renderer2 } from '@angular/core';
 import { Address } from 'ngx-google-places-autocomplete/objects/address';
 import { FormBuilder, Validators } from '@angular/forms'
 import { OnInit } from '@angular/core';
+import { DistanceCalculeService } from 'src/app/services/distance-calcule.service';
 
 @Component({
   selector: 'app-address',
@@ -20,7 +21,8 @@ export class AddressComponent implements OnInit {
 
   constructor(
     private formBuilder: FormBuilder,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private distanceService: DistanceCalculeService
   ) {
     this.formattedAddress = "";
   }
@@ -37,7 +39,7 @@ export class AddressComponent implements OnInit {
       district: [{ value: "", disabled: true }, [Validators.required]],
       city: [{ value: "", disabled: true }, [Validators.required]],
       state: [{ value: "", disabled: true }, [Validators.required]],
-    })
+    });
   }
 
   cleanAddressInput() {
@@ -55,25 +57,37 @@ export class AddressComponent implements OnInit {
   }
 
   handleAddressChange(address: Address) {
-    console.log(address)
+    console.log(address);
     try {
-      this.verifyQueryError(address)
+      this.disableAllControls();
+      this.verifyQueryError(address);
     } catch (error) {
-      this.throwNewError()
+      this.throwNewError();
     }
   }
 
+  disableAllControls() {
+    this.addressForm.get("street").disable();
+    this.addressForm.get("numberFinal").disable();
+    this.addressForm.get("complement").disable();
+    this.addressForm.get("city").disable();
+    this.addressForm.get("state").disable();
+  }
+
   verifyQueryError(addressToVerify: Address) {
-    if (addressToVerify?.address_components?.length == 7 || addressToVerify.address_components[0].types[0] == "route" || addressToVerify.address_components[0].types[0] == "postal_code") {
-      this.transferBruteValues(addressToVerify)
-    }
-    if (addressToVerify?.address_components?.length == 7) {
+
+    let objectFirstIndexValue = addressToVerify?.address_components[0].types[0];
+
+    // if (objectFirstIndexValue == "street_number" || objectFirstIndexValue == "route" || objectFirstIndexValue == "postal_code") {
+    this.transferBruteValues(addressToVerify)
+    // }
+    if (objectFirstIndexValue == "street_number") {
       this.callWithNumberFunctions();
-    } else if (addressToVerify?.address_components[0].types[0] == "route") {
-      this.callNoNumberFunctions();
-    } else if (addressToVerify.address_components[0].types[0] == "postal_code") {
+    } else if (objectFirstIndexValue == "route") {
+      this.callLeftNumberFunctions();
+    } else if (objectFirstIndexValue == "postal_code") {
       this.invertPositionCEP();
-      this.callNoNumberFunctions();
+      this.callLeftNumberFunctions();
     }
     else {
       this.throwNewError()
@@ -84,6 +98,8 @@ export class AddressComponent implements OnInit {
     this.componentsAddress = address.address_components;
     this.userLatitude = address.geometry.location.lat();
     this.userLongitude = address.geometry.location.lng();
+    console.log(this.userLatitude);
+    console.log(this.userLongitude);
   }
 
   throwNewError() {
@@ -107,7 +123,7 @@ export class AddressComponent implements OnInit {
     console.log(this.componentsAddress);
   }
 
-  callNoNumberFunctions() {
+  callLeftNumberFunctions() {
     this.hideElementAlert();
     this.transferPartialAddressDataToForm();
     this.enableNumberInput();
@@ -121,11 +137,20 @@ export class AddressComponent implements OnInit {
   }
 
   transferFullAddressDataToForm() {
+    this.resetForm();
     this.addressForm.get("street").setValue(this.componentsAddress[1].long_name);
     this.addressForm.get("numberFinal").setValue(this.componentsAddress[0].long_name);
     this.addressForm.get("district").setValue(this.componentsAddress[2].long_name);
     this.addressForm.get("city").setValue(this.componentsAddress[3].long_name);
     this.addressForm.get("state").setValue(this.componentsAddress[4].short_name);
+  }
+
+  resetForm() {
+    this.addressForm.get("street").setValue("");
+    this.addressForm.get("numberFinal").setValue("");
+    this.addressForm.get("district").setValue("");
+    this.addressForm.get("city").setValue("");
+    this.addressForm.get("state").setValue("");
   }
 
   enableComplementInput() {
@@ -137,6 +162,7 @@ export class AddressComponent implements OnInit {
   }
 
   transferPartialAddressDataToForm() {
+    this.resetForm();
     this.addressForm.get("street").setValue(this.componentsAddress[0].long_name);
     this.addressForm.get("district").setValue(this.componentsAddress[1].long_name);
     this.addressForm.get("city").setValue(this.componentsAddress[2].long_name);

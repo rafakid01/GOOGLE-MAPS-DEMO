@@ -7,11 +7,13 @@ import { AddressComponent } from './components/address/address.component';
 import { GooglePlaceModule } from 'ngx-google-places-autocomplete';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgxMaskModule } from 'ngx-mask';
+import { DeliveryDistanceComponent } from './components/delivery-distance/delivery-distance.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    AddressComponent
+    AddressComponent,
+    DeliveryDistanceComponent
   ],
   imports: [
     BrowserModule,

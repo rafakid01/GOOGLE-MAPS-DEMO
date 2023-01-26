@@ -1,1 +1,10 @@
-/* You can add global styles to this file, and also import other style files */
+.pac-container {
+    box-shadow: none;
+    border: 1px solid rgb(226, 226, 226);
+    border-radius: 8px !important;
+}
+
+.pac-item {
+    padding: .8em;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
