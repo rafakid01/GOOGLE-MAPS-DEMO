@@ -8,6 +8,8 @@ import { Location } from '../classes/location';
 })
 export class DistanceCalculeService {
 
+  constructor() { }
+
   calculateDistance(origin: Location, location: Location) {
     let originLatLng: LatLng = {
       lat() {
@@ -26,10 +28,7 @@ export class DistanceCalculeService {
       }
     }
     return this.getDistance(originLatLng, locationLatLng);
-    
   }
-
-  constructor() { }
 
   getDistance(origin: LatLng, destination: LatLng) {
     const matrix = new google.maps.DistanceMatrixService();
@@ -47,4 +46,6 @@ export class DistanceCalculeService {
       });
     })
   }
+
+  
 }

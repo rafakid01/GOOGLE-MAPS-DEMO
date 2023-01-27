@@ -47,9 +47,6 @@
                                 <label for="complementAddressInput">Complemento</label>
                             </div>
                         </div>
-                        <!-- <h4>
-                            {{componentsAddress?.address_components[0].long_name}}
-                        </h4> -->
                         <div class="col-6">
                             <div class="form-floating">
                                 <input autocomplete="false" type="text" id="districtAddressInput" placeholder="Bairro"
@@ -73,19 +70,27 @@
                         </div>
                     </div>
                 </div>
-                <!-- <div class="row justify-content-center px-0 py-4">
-                    <button type="submit" class="btn btn-outline-success col-4" [disabled]="!addressForm.valid">
-                        Save
-                    </button>
-                </div> -->
             </form>
         </div>
     </div>
     <div class="row justify-content-center" *ngIf="componentsAddress?.length > 0">
         <div class="col-12">
-            <div class="row p-0 my-4 justify-content-end">
+            <div class="row p-0 my-4 justify-content-between">
+                <div class="col-4">
+                    <form action="" [formGroup]="vehicleSelect">
+                        <select class="form-select" aria-label="Default select example" formControlName="typeSelect">
+                            <option class="select-option" selected>Tipo do veículo</option>
+                            <option class="select-option" value="1">Bicicleta</option>
+                            <option class="select-option" value="2">Caminhão</option>
+                            <option class="select-option" value="3">Moto</option>
+                            <option class="select-option" value="4">Patinete</option>
+                            <option class="select-option" value="5">Utilitário</option>
+                            <option class="select-option" value="6">Moto Elétrica</option>
+                        </select>
+                    </form>
+                </div>
                 <div class="col-4 d-flex justify-content-end">
-                    <button class="btn btn-outline-primary" (click)="createDestinationObject()">
+                    <button class="btn btn-outline-primary" (click)="createDestinationObject()" [disabled]="!addressForm.valid && !typeSelect.valid">
                         Confirmar
                     </button>
                 </div>

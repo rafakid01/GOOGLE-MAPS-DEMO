@@ -17,8 +17,10 @@ export class AddressComponent implements OnInit {
   componentsAddress: any;
   userLatitude: any;
   userLongitude: any;
+
   addressForm: any;
-  formattedAddress: string;
+  typeSelect: any;
+  vehicleSelect: any;
 
   userLocation: Location;
   destination?: Location;
@@ -31,7 +33,6 @@ export class AddressComponent implements OnInit {
     private renderer: Renderer2,
     private distanceService: DistanceCalculeService
   ) {
-    this.formattedAddress = "";
     this.userLocation = {
       lat: -23.3595757,
       lng: -47.8709175,
@@ -51,6 +52,11 @@ export class AddressComponent implements OnInit {
       city: [{ value: "", disabled: true }, [Validators.required]],
       state: [{ value: "", disabled: true }, [Validators.required]],
     });
+
+    let formControl = new FormBuilder().nonNullable;
+    this.vehicleSelect = formControl.group([
+      { typeSelect: Validators.required }
+    ])
   }
 
   cleanAddressInput() {
