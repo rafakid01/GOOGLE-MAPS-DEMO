@@ -1,61 +1,37 @@
 import { Injectable } from '@angular/core';
 import { } from 'googlemaps';
 import { LatLng, LatLngLiteral } from 'ngx-google-places-autocomplete/objects/latLng';
+import { Location } from '../classes/location';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DistanceCalculeService {
 
-  originObjectTest: LatLng = {
-    equals(): boolean {
-      return false;
-    },
-    lat() {
-      return -23.3535957;
-    },
-    lng() {
-      return -47.8597903;
-    },
-    toUrlValue(precision?: number): string {
-      return "-23.3535957/-47.8597903";
-    },
-    toJSON(): LatLngLiteral {
-      return {
-        lat: -23.3535957,
-        lng: -47.8597903
-      };
+  calculateDistance(origin: Location, location: Location) {
+    let originLatLng: LatLng = {
+      lat() {
+        return origin.lat;
+      },
+      lng() {
+        return origin.lng;
+      }
     }
-  }
-
-  destinationObjectTest: LatLng = {
-    equals(): boolean {
-      return false;
-    },
-    lat() {
-      return -23.348042;
-    },
-    lng() {
-      return -47.840923;
-    },
-    toUrlValue(precision?: number): string {
-      return "-23.348042/-47.840923";
-    },
-    toJSON(): LatLngLiteral {
-      return {
-        lat: -23.348042,
-        lng: -47.840923
-      };
+    let locationLatLng: LatLng = {
+      lat() {
+        return location.lat;
+      },
+      lng() {
+        return location.lng;
+      }
     }
-  }
-
-  calculateDistance() {
-    this.getDistance(this.originObjectTest, this.destinationObjectTest);
+    return this.getDistance(originLatLng, locationLatLng);
+    
   }
 
   constructor() { }
 
-  public getDistance(origin: LatLng, destination: LatLng) {
+  getDistance(origin: LatLng, destination: LatLng) {
     const matrix = new google.maps.DistanceMatrixService();
     return new Promise((resolve, reject) => {
       matrix.getDistanceMatrix({
@@ -64,7 +40,6 @@ export class DistanceCalculeService {
         travelMode: google.maps.TravelMode.DRIVING,
       }, function (response, status) {
         if (status === 'OK') {
-          console.log(response)
           resolve(response);
         } else {
           reject(response);

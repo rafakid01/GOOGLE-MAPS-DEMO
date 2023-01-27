@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-delivery-distance',
@@ -6,5 +6,9 @@ import { Component } from '@angular/core';
   styleUrls: ['./delivery-distance.component.css']
 })
 export class DeliveryDistanceComponent {
+  @Input()
+  public distanceObj: any;
 
+  @Input()
+  public trajectoryObj: any;
 }

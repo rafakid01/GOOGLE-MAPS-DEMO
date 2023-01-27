@@ -3,6 +3,7 @@ import { Address } from 'ngx-google-places-autocomplete/objects/address';
 import { FormBuilder, Validators } from '@angular/forms'
 import { OnInit } from '@angular/core';
 import { DistanceCalculeService } from 'src/app/services/distance-calcule.service';
+import { Location } from 'src/app/classes/location';
 
 @Component({
   selector: 'app-address',
@@ -19,12 +20,22 @@ export class AddressComponent implements OnInit {
   addressForm: any;
   formattedAddress: string;
 
+  userLocation: Location;
+  destination?: Location;
+
+  public distanceTotal?: any;
+  public trajectoryObject?: any;
+
   constructor(
     private formBuilder: FormBuilder,
     private renderer: Renderer2,
     private distanceService: DistanceCalculeService
   ) {
     this.formattedAddress = "";
+    this.userLocation = {
+      lat: -23.3595757,
+      lng: -47.8709175,
+    }
   }
 
   ngOnInit() {
@@ -47,6 +58,12 @@ export class AddressComponent implements OnInit {
     addressHTMLInput.value = "";
     this.componentsAddress = null;
     this.renderer.selectRootElement("#addressInput").focus();
+    this.cleanAddressesObject();
+  }
+
+  cleanAddressesObject() {
+    this.distanceTotal = null;
+    this.trajectoryObject = null;
   }
 
   verifyEmptyInput() {
@@ -66,6 +83,13 @@ export class AddressComponent implements OnInit {
     }
   }
 
+  throwNewError() {
+    let alertHTML = document.getElementById("rewriteAlert");
+    alertHTML!.className = "p-1 alert alert-danger rewrite-alert show";
+    this.componentsAddress = null;
+    throw new Error("Endereço Inválido, insira novamente");
+  }
+
   disableAllControls() {
     this.addressForm.get("street").disable();
     this.addressForm.get("numberFinal").disable();
@@ -78,17 +102,14 @@ export class AddressComponent implements OnInit {
 
     let objectFirstIndexValue = addressToVerify?.address_components[0].types[0];
 
-    // if (objectFirstIndexValue == "street_number" || objectFirstIndexValue == "route" || objectFirstIndexValue == "postal_code") {
     this.transferBruteValues(addressToVerify)
-    // }
+
     if (objectFirstIndexValue == "street_number") {
       this.callWithNumberFunctions();
-    } else if (objectFirstIndexValue == "route") {
-      this.callLeftNumberFunctions();
-    } else if (objectFirstIndexValue == "postal_code") {
-      this.invertPositionCEP();
-      this.callLeftNumberFunctions();
     }
+    // else if (objectFirstIndexValue == "route") {
+    // this.callLeftNumberFunctions();
+    // }
     else {
       this.throwNewError()
     }
@@ -98,23 +119,10 @@ export class AddressComponent implements OnInit {
     this.componentsAddress = address.address_components;
     this.userLatitude = address.geometry.location.lat();
     this.userLongitude = address.geometry.location.lng();
-    console.log(this.userLatitude);
-    console.log(this.userLongitude);
   }
 
-  throwNewError() {
-    let alertHTML = document.getElementById("rewriteAlert");
-    alertHTML!.className = "p-1 alert alert-danger rewrite-alert show";
-    this.componentsAddress = null;
-    throw new Error("Endereço Inválido, insira novamente");
-  }
 
-  invertPositionCEP() {
-    this.componentsAddress.push(
-      this.componentsAddress[0]
-    )
-    this.componentsAddress.shift();
-  }
+
 
   callWithNumberFunctions() {
     this.hideElementAlert();
@@ -123,13 +131,13 @@ export class AddressComponent implements OnInit {
     console.log(this.componentsAddress);
   }
 
-  callLeftNumberFunctions() {
-    this.hideElementAlert();
-    this.transferPartialAddressDataToForm();
-    this.enableNumberInput();
-    this.enableComplementInput();
-    console.log(this.componentsAddress);
-  }
+  // callLeftNumberFunctions() {
+  //   this.hideElementAlert();
+  //   this.transferPartialAddressDataToForm();
+  //   this.enableNumberInput();
+  //   this.enableComplementInput();
+  //   console.log(this.componentsAddress);
+  // }
 
   hideElementAlert() {
     let alertHTML = document.getElementById("rewriteAlert");
@@ -145,6 +153,14 @@ export class AddressComponent implements OnInit {
     this.addressForm.get("state").setValue(this.componentsAddress[4].short_name);
   }
 
+  // transferPartialAddressDataToForm() {
+  //   this.resetForm();
+  //   this.addressForm.get("street").setValue(this.componentsAddress[0].long_name);
+  //   this.addressForm.get("district").setValue(this.componentsAddress[1].long_name);
+  //   this.addressForm.get("city").setValue(this.componentsAddress[2].long_name);
+  //   this.addressForm.get("state").setValue(this.componentsAddress[3].short_name);
+  // }
+
   resetForm() {
     this.addressForm.get("street").setValue("");
     this.addressForm.get("numberFinal").setValue("");
@@ -157,15 +173,31 @@ export class AddressComponent implements OnInit {
     this.addressForm.get("complement").enable();
   }
 
-  enableNumberInput() {
-    this.addressForm.get("numberFinal").enable();
+  // enableNumberInput() {
+  //   this.addressForm.get("numberFinal").enable();
+  // }
+
+  createDestinationObject() {
+    this.destination = {
+      lat: this.userLatitude,
+      lng: this.userLongitude,
+    }
+    Promise.resolve(this.calculateDistance(this.userLocation, this.destination));
   }
 
-  transferPartialAddressDataToForm() {
-    this.resetForm();
-    this.addressForm.get("street").setValue(this.componentsAddress[0].long_name);
-    this.addressForm.get("district").setValue(this.componentsAddress[1].long_name);
-    this.addressForm.get("city").setValue(this.componentsAddress[2].long_name);
-    this.addressForm.get("state").setValue(this.componentsAddress[3].short_name);
+  calculateDistance(origin: Location, location: Location) {
+
+    const distanceObject = Promise.resolve(this.distanceService.calculateDistance(origin, location));
+
+    distanceObject.then((distance: any) => {
+      this.distanceTotal = distance.rows[0].elements[0].distance;
+      this.trajectoryObject = {
+        origin: distance?.originAddresses[0],
+        destination: distance?.destinationAddresses[0]
+      };
+      console.log(this.distanceTotal);
+      console.log(this.trajectoryObject);
+    })
   }
+
 }

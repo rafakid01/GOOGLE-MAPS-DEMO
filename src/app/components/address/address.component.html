@@ -10,7 +10,7 @@
                                     ngx-google-places-autocomplete [options]="options"
                                     (onAddressChange)="handleAddressChange($event)" (blur)="verifyEmptyInput()">
                                 <label for="addressInput" class="complete-input-label">
-                                    Insira o endereço completo com o número
+                                    Insira o endereço completo
                                 </label>
                             </div>
                             <div class="clean-input-btn col-1 p-0 m-0" (click)="cleanAddressInput()">
@@ -21,7 +21,7 @@
                         </div>
                         <span class="hide" id="rewriteAlert">
                             <i class="bi bi-exclamation"></i>
-                            Insira um endereço válido (<strong>Endereço completo ou CEP</strong>)
+                            Insira um endereço válido: <strong>Rua, número, bairro ...</strong>
                             <i class="bi bi-exclamation"></i>
                         </span>
                     </div>
@@ -85,14 +85,14 @@
         <div class="col-12">
             <div class="row p-0 my-4 justify-content-end">
                 <div class="col-4 d-flex justify-content-end">
-                    <button class="btn btn-primary">
+                    <button class="btn btn-outline-primary" (click)="createDestinationObject()">
                         Confirmar
                     </button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row hide">
-        <app-delivery-distance></app-delivery-distance>
+    <div class="row " *ngIf="distanceTotal?.text && componentsAddress?.length > 0">
+        <app-delivery-distance [distanceObj]="distanceTotal" [trajectoryObj]="trajectoryObject"></app-delivery-distance>
     </div>
 </div>
