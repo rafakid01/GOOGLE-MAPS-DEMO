@@ -7,7 +7,7 @@
                         <div class="row my-2">
                             <div class="form-floating main-address-input col-11 p-0">
                                 <input autocomplete="false" type="text" class="form-control" id="addressInput"
-                                    ngx-google-places-autocomplete [options]="options"
+                                    ngx-google-places-autocomplete [options]="searchOptions"
                                     (onAddressChange)="handleAddressChange($event)" (blur)="verifyEmptyInput()">
                                 <label for="addressInput" class="complete-input-label">
                                     Insira o endereço completo
@@ -77,20 +77,19 @@
         <div class="col-12">
             <div class="row p-0 my-4 justify-content-between">
                 <div class="col-4">
-                    <form action="" [formGroup]="vehicleSelect">
-                        <select class="form-select" aria-label="Default select example" formControlName="typeSelect">
-                            <option class="select-option" selected>Tipo do veículo</option>
-                            <option class="select-option" value="1">Bicicleta</option>
-                            <option class="select-option" value="2">Caminhão</option>
-                            <option class="select-option" value="3">Moto</option>
-                            <option class="select-option" value="4">Patinete</option>
-                            <option class="select-option" value="5">Utilitário</option>
-                            <option class="select-option" value="6">Moto Elétrica</option>
-                        </select>
-                    </form>
+                    <select class="form-select" aria-label="Default select example">
+                        <option class="select-option" selected>Tipo do veículo</option>
+                        <option class="select-option" value="1">Bicicleta</option>
+                        <option class="select-option" value="2">Caminhão</option>
+                        <option class="select-option" value="3">Moto</option>
+                        <option class="select-option" value="4">Patinete</option>
+                        <option class="select-option" value="5">Utilitário</option>
+                        <option class="select-option" value="6">Moto Elétrica</option>
+                    </select>
                 </div>
                 <div class="col-4 d-flex justify-content-end">
-                    <button class="btn btn-outline-primary" (click)="createDestinationObject()" [disabled]="!addressForm.valid && !typeSelect.valid">
+                    <button class="btn btn-outline-primary" (click)="createDestinationObject()"
+                        [disabled]="!addressForm.valid && !typeSelect.valid">
                         Confirmar
                     </button>
                 </div>
@@ -99,5 +98,12 @@
     </div>
     <div class="row " *ngIf="distanceTotal?.text && componentsAddress?.length > 0">
         <app-delivery-distance [distanceObj]="distanceTotal" [trajectoryObj]="trajectoryObject"></app-delivery-distance>
+    </div>
+    <div class="row">
+        <google-map height="480px" width="100%" [center]="center" [zoom]="zoom" (mapClick)="getLocation($event)" [options]="mapOptions">
+        </google-map>
+    </div>
+    <div class="row">
+        {{location}}
     </div>
 </div>

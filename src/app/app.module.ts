@@ -8,6 +8,7 @@ import { GooglePlaceModule } from 'ngx-google-places-autocomplete';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgxMaskModule } from 'ngx-mask';
 import { DeliveryDistanceComponent } from './components/delivery-distance/delivery-distance.component';
+import { GoogleMapsModule } from '@angular/google-maps';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { DeliveryDistanceComponent } from './components/delivery-distance/delive
     AppRoutingModule,
     GooglePlaceModule,
     ReactiveFormsModule,
-    NgxMaskModule.forRoot()
+    NgxMaskModule.forRoot(),
+    GoogleMapsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -4,6 +4,7 @@ import { FormBuilder, Validators } from '@angular/forms'
 import { OnInit } from '@angular/core';
 import { DistanceCalculeService } from 'src/app/services/distance-calcule.service';
 import { Location } from 'src/app/classes/location';
+import { MaskPipe } from 'ngx-mask';
 
 @Component({
   selector: 'app-address',
@@ -11,8 +12,9 @@ import { Location } from 'src/app/classes/location';
   styleUrls: ['./address.component.css']
 })
 export class AddressComponent implements OnInit {
-  options: any = {
+  searchOptions: any = {
     componentRestrictions: { country: "BR" },
+    fields: ["address_components", "geometry", "icon", "name"],
   }
   componentsAddress: any;
   userLatitude: any;
@@ -24,6 +26,11 @@ export class AddressComponent implements OnInit {
 
   userLocation: Location;
   destination?: Location;
+
+  center: google.maps.LatLngLiteral;
+  zoom: number;
+  mapOptions: google.maps.MapOptions;
+  location: any;
 
   public distanceTotal?: any;
   public trajectoryObject?: any;
@@ -37,10 +44,25 @@ export class AddressComponent implements OnInit {
       lat: -23.3595757,
       lng: -47.8709175,
     }
+
+    this.center = {
+      lat: -23.3595757,
+      lng: -47.8709175
+    };
+
+    this.mapOptions = {
+      mapTypeId: 'roadmap',
+      disableDoubleClickZoom: true,
+      draggableCursor: "default",
+      draggingCursor: "move",
+      streetViewControl: false,
+    }
+
+    this.zoom = 14;
   }
 
   ngOnInit() {
-    this.createInitForm()
+    this.createInitForm();
   }
 
   createInitForm() {
@@ -52,11 +74,13 @@ export class AddressComponent implements OnInit {
       city: [{ value: "", disabled: true }, [Validators.required]],
       state: [{ value: "", disabled: true }, [Validators.required]],
     });
+  }
 
-    let formControl = new FormBuilder().nonNullable;
-    this.vehicleSelect = formControl.group([
-      { typeSelect: Validators.required }
-    ])
+  getLocation(event: google.maps.MapMouseEvent) {
+    if (event.latLng != null) {
+      console.log(this.center);
+      this.location = event.latLng.toJSON();
+    }
   }
 
   cleanAddressInput() {
@@ -126,9 +150,6 @@ export class AddressComponent implements OnInit {
     this.userLatitude = address.geometry.location.lat();
     this.userLongitude = address.geometry.location.lng();
   }
-
-
-
 
   callWithNumberFunctions() {
     this.hideElementAlert();
