@@ -100,10 +100,17 @@
         <app-delivery-distance [distanceObj]="distanceTotal" [trajectoryObj]="trajectoryObject"></app-delivery-distance>
     </div>
     <div class="row">
+        <div class="col-11">
+            <input type="text" class="form-control py-2" #mapSearchField>
+        </div>
+    </div>
+    <div class="row">
         <google-map height="480px" width="100%" [center]="center" [zoom]="zoom" (mapClick)="getLocation($event)" [options]="mapOptions">
+            <map-marker [position]="marker?.position" [options]="markerOptions"></map-marker>
         </google-map>
     </div>
     <div class="row">
-        {{location}}
+        <h4>{{location?.lat}}</h4>
+        <h4>{{location?.lng}}</h4>
     </div>
 </div>

@@ -1,10 +1,11 @@
-import { Component, Renderer2 } from '@angular/core';
+import { Component, ElementRef, Renderer2, ViewChild } from '@angular/core';
 import { Address } from 'ngx-google-places-autocomplete/objects/address';
 import { FormBuilder, Validators } from '@angular/forms'
 import { OnInit } from '@angular/core';
 import { DistanceCalculeService } from 'src/app/services/distance-calcule.service';
 import { Location } from 'src/app/classes/location';
 import { MaskPipe } from 'ngx-mask';
+import { GoogleMap } from '@angular/google-maps';
 
 @Component({
   selector: 'app-address',
@@ -12,6 +13,10 @@ import { MaskPipe } from 'ngx-mask';
   styleUrls: ['./address.component.css']
 })
 export class AddressComponent implements OnInit {
+
+  @ViewChild("mapSearchField") searchField!: ElementRef;
+  @ViewChild(GoogleMap) map!: GoogleMap;
+
   searchOptions: any = {
     componentRestrictions: { country: "BR" },
     fields: ["address_components", "geometry", "icon", "name"],
@@ -30,7 +35,9 @@ export class AddressComponent implements OnInit {
   center: google.maps.LatLngLiteral;
   zoom: number;
   mapOptions: google.maps.MapOptions;
-  location: any;
+  markerOptions: google.maps.MarkerOptions;
+  location?: google.maps.LatLngLiteral;
+  marker: any;
 
   public distanceTotal?: any;
   public trajectoryObject?: any;
@@ -56,9 +63,49 @@ export class AddressComponent implements OnInit {
       draggableCursor: "default",
       draggingCursor: "move",
       streetViewControl: false,
+      mapTypeControlOptions: {
+        position: google.maps.ControlPosition.LEFT_BOTTOM
+      },
+      fullscreenControl: false
+    }
+
+    this.markerOptions = {
+      cursor: "default",
     }
 
     this.zoom = 14;
+  }
+
+  ngAfterViewInit(): void {
+    const searchBox = new google.maps.places.SearchBox(
+      this.searchField.nativeElement
+    );
+    this.map.controls[google.maps.ControlPosition.TOP_CENTER].push(
+      this.searchField.nativeElement,
+    );
+    searchBox.addListener("places_changed", () => {
+      const places = searchBox.getPlaces();
+      if (places.length === 0) {
+        return;
+      }
+      const bounds = new google.maps.LatLngBounds();
+      places.forEach(place => {
+        if (!place.geometry || !place.geometry!.location) {
+          return
+        }
+        if (place.geometry!.viewport) {
+          bounds.union(place.geometry!.viewport);
+        } else {
+          bounds.extend(place.geometry!.location);
+        }
+      });
+      this.map.fitBounds(bounds);
+      this.marker = {
+        position: this.map.centerChanged.destination._value.center
+      };
+      this.zoom = 20;
+      this.location = this.marker.position;
+    })
   }
 
   ngOnInit() {
@@ -78,8 +125,11 @@ export class AddressComponent implements OnInit {
 
   getLocation(event: google.maps.MapMouseEvent) {
     if (event.latLng != null) {
-      console.log(this.center);
+      this.marker = {
+        position: event.latLng.toJSON()
+      }
       this.location = event.latLng.toJSON();
+      console.log(this.marker);
     }
   }
 
