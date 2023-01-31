@@ -1,30 +1,41 @@
 <div class="container">
     <div class="row my-3 justify-content-center">
         <div class="col-12">
-            <form action="" class="row justify-content-center" [formGroup]="addressForm">
-                <div class="row justify-content-between p-0 form-floating">
-                    <div class="col-12">
-                        <div class="row my-2">
-                            <div class="form-floating main-address-input col-11 p-0">
-                                <input autocomplete="false" type="text" class="form-control" id="addressInput"
-                                    ngx-google-places-autocomplete [options]="searchOptions"
-                                    (onAddressChange)="handleAddressChange($event)" (blur)="verifyEmptyInput()">
-                                <label for="addressInput" class="complete-input-label">
-                                    Insira o endereço completo
-                                </label>
-                            </div>
-                            <div class="clean-input-btn col-1 p-0 m-0" (click)="cleanAddressInput()">
-                                <button class="btn">
-                                    <i class="bi bi-x-circle"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <span class="hide" id="rewriteAlert">
+            <div class="row my-2">
+                <div class="row">
+                    <div class="form-floating main-address-input col-11">
+                        <input autocomplete="false" type="text" class="form-control" id="addressInput"
+                            ngx-google-places-autocomplete [options]="searchOptions"
+                            (onAddressChange)="inputAddressChange($event)" (blur)="verifyEmptyInput()"
+                            [disabled]="!keyDisable">
+                        <label for="addressInput" class="complete-input-label">
+                            Insira o endereço completo
+                        </label>
+                    </div>
+                    <div class="clean-input-btn col-1 p-0 m-0" (click)="cleanAddressInput()">
+                        <button class="btn" [disabled]="!keyDisable">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="row my-2">
+                    <div class="col-6 d-flex align-items-center">
+                        <span class="p-1 alert alert-danger m-0" id="rewriteAlert" [hidden]="keyAlert">
                             <i class="bi bi-exclamation"></i>
                             Insira um endereço válido: <strong>Rua, número, bairro ...</strong>
                             <i class="bi bi-exclamation"></i>
                         </span>
                     </div>
+                    <div class="col-5 d-flex justify-content-end">
+                        <button class="btn btn-{{keyThemeBtn}}" (click)="changeSearchToMap()">
+                            {{keyBtnChangeText}}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <form action="" class="row justify-content-center" [formGroup]="addressForm">
+                <div class="row justify-content-between p-0 form-floating">
+
                     <div class="row p-0" *ngIf="componentsAddress?.length > 0">
                         <div class="col-6">
                             <div class="form-floating">
@@ -96,21 +107,24 @@
             </div>
         </div>
     </div>
-    <div class="row " *ngIf="distanceTotal?.text && componentsAddress?.length > 0">
+    <div class="row" *ngIf="distanceTotal?.text && componentsAddress?.length > 0">
         <app-delivery-distance [distanceObj]="distanceTotal" [trajectoryObj]="trajectoryObject"></app-delivery-distance>
     </div>
-    <div class="row">
-        <div class="col-11">
-            <input type="text" class="form-control py-2" #mapSearchField>
+    <div class="row" [hidden]="keyMap">
+        <div class="row">
+            <div class="col-11">
+                <input type="text" class="form-control py-2" #mapSearchField>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <google-map height="480px" width="100%" [center]="center" [zoom]="zoom" (mapClick)="getLocation($event)" [options]="mapOptions">
-            <map-marker [position]="marker?.position" [options]="markerOptions"></map-marker>
-        </google-map>
-    </div>
-    <div class="row">
-        <h4>{{location?.lat}}</h4>
-        <h4>{{location?.lng}}</h4>
+        <div class="row">
+            <google-map height="480px" width="100%" [center]="center" [zoom]="zoom"
+                (mapClick)="getClickLocation($event)" [options]="mapOptions">
+                <map-marker [position]="marker?.position" [options]="markerOptions"></map-marker>
+            </google-map>
+        </div>
+        <div class="row">
+            <h4>{{location?.lat}}</h4>
+            <h4>{{location?.lng}}</h4>
+        </div>
     </div>
 </div>

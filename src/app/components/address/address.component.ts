@@ -1,10 +1,9 @@
-import { Component, ElementRef, Renderer2, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Renderer2, ViewChild } from '@angular/core';
 import { Address } from 'ngx-google-places-autocomplete/objects/address';
 import { FormBuilder, Validators } from '@angular/forms'
 import { OnInit } from '@angular/core';
 import { DistanceCalculeService } from 'src/app/services/distance-calcule.service';
 import { Location } from 'src/app/classes/location';
-import { MaskPipe } from 'ngx-mask';
 import { GoogleMap } from '@angular/google-maps';
 
 @Component({
@@ -12,32 +11,37 @@ import { GoogleMap } from '@angular/google-maps';
   templateUrl: './address.component.html',
   styleUrls: ['./address.component.css']
 })
-export class AddressComponent implements OnInit {
+export class AddressComponent implements OnInit, AfterViewInit {
 
   @ViewChild("mapSearchField") searchField!: ElementRef;
   @ViewChild(GoogleMap) map!: GoogleMap;
+
+  addressForm: any;
+  center: google.maps.LatLngLiteral;
+  componentsAddress: any;
+  destination?: Location;
+  keyAlert: boolean;
+  keyBtnChangeText: string;
+  keyChangeBtn: boolean;
+  keyDisable: boolean;
+  keyForm: boolean;
+  keyMap: boolean;
+  keyThemeBtn: string;
+  location?: google.maps.LatLngLiteral;
+  mapOptions: google.maps.MapOptions;
+  marker: any;
+  markerOptions: google.maps.MarkerOptions;
+  typeSelect: any;
+  userLatitude: any;
+  userLongitude: any;
+  userLocation: Location;
+  vehicleSelect: any;
+  zoom: number;
 
   searchOptions: any = {
     componentRestrictions: { country: "BR" },
     fields: ["address_components", "geometry", "icon", "name"],
   }
-  componentsAddress: any;
-  userLatitude: any;
-  userLongitude: any;
-
-  addressForm: any;
-  typeSelect: any;
-  vehicleSelect: any;
-
-  userLocation: Location;
-  destination?: Location;
-
-  center: google.maps.LatLngLiteral;
-  zoom: number;
-  mapOptions: google.maps.MapOptions;
-  markerOptions: google.maps.MarkerOptions;
-  location?: google.maps.LatLngLiteral;
-  marker: any;
 
   public distanceTotal?: any;
   public trajectoryObject?: any;
@@ -73,6 +77,13 @@ export class AddressComponent implements OnInit {
       cursor: "default",
     }
 
+    this.keyAlert = true;
+    this.keyBtnChangeText = "Procurar endereço pelo mapa";
+    this.keyChangeBtn = true;
+    this.keyDisable = true;
+    this.keyForm = true;
+    this.keyMap = true;
+    this.keyThemeBtn = "danger";
     this.zoom = 14;
   }
 
@@ -103,13 +114,22 @@ export class AddressComponent implements OnInit {
       this.marker = {
         position: this.map.centerChanged.destination._value.center
       };
+      console.log(this.marker);
       this.zoom = 20;
-      this.location = this.marker.position;
     })
   }
 
   ngOnInit() {
     this.createInitForm();
+  }
+
+  getClickLocation(event: google.maps.MapMouseEvent) {
+    if (event.latLng != null) {
+      this.marker = {
+        position: event.latLng.toJSON()
+      }
+      this.location = event.latLng.toJSON();
+    }
   }
 
   createInitForm() {
@@ -121,16 +141,6 @@ export class AddressComponent implements OnInit {
       city: [{ value: "", disabled: true }, [Validators.required]],
       state: [{ value: "", disabled: true }, [Validators.required]],
     });
-  }
-
-  getLocation(event: google.maps.MapMouseEvent) {
-    if (event.latLng != null) {
-      this.marker = {
-        position: event.latLng.toJSON()
-      }
-      this.location = event.latLng.toJSON();
-      console.log(this.marker);
-    }
   }
 
   cleanAddressInput() {
@@ -146,6 +156,25 @@ export class AddressComponent implements OnInit {
     this.trajectoryObject = null;
   }
 
+  changeSearchToMap() {
+    this.keyMap = !this.keyMap;
+    this.keyAlert = true;
+    this.changeBtnMapText(this.keyMap);
+  }
+
+  changeBtnMapText(change: boolean) {
+    if (change) {
+      this.keyBtnChangeText = "Procurar endereço pelo mapa";
+      this.keyThemeBtn = "danger";
+      this.keyDisable = true;
+    } else {
+      this.keyBtnChangeText = "Procurar endereço pela barra";
+      this.keyThemeBtn = "success";
+      this.keyDisable = false;
+      this.cleanAddressInput()
+    }
+  }
+
   verifyEmptyInput() {
     let addressHTMLInput: any = document.getElementById("addressInput");
     if (addressHTMLInput?.value == "") {
@@ -153,7 +182,7 @@ export class AddressComponent implements OnInit {
     }
   }
 
-  handleAddressChange(address: Address) {
+  inputAddressChange(address: Address) {
     console.log(address);
     try {
       this.disableAllControls();
@@ -164,10 +193,18 @@ export class AddressComponent implements OnInit {
   }
 
   throwNewError() {
-    let alertHTML = document.getElementById("rewriteAlert");
-    alertHTML!.className = "p-1 alert alert-danger rewrite-alert show";
+    this.showElementAlert();
+    this.showElementBtnChange();
     this.componentsAddress = null;
     throw new Error("Endereço Inválido, insira novamente");
+  }
+
+  showElementAlert() {
+    this.keyAlert = false;
+  }
+
+  showElementBtnChange() {
+    this.keyChangeBtn = false;
   }
 
   disableAllControls() {
@@ -179,19 +216,13 @@ export class AddressComponent implements OnInit {
   }
 
   verifyQueryError(addressToVerify: Address) {
-
     let objectFirstIndexValue = addressToVerify?.address_components[0].types[0];
-
-    this.transferBruteValues(addressToVerify)
-
+    this.transferBruteValues(addressToVerify);
     if (objectFirstIndexValue == "street_number") {
       this.callWithNumberFunctions();
     }
-    // else if (objectFirstIndexValue == "route") {
-    // this.callLeftNumberFunctions();
-    // }
     else {
-      this.throwNewError()
+      this.throwNewError();
     }
   }
 
@@ -205,20 +236,18 @@ export class AddressComponent implements OnInit {
     this.hideElementAlert();
     this.transferFullAddressDataToForm();
     this.enableComplementInput();
-    console.log(this.componentsAddress);
   }
 
-  // callLeftNumberFunctions() {
-  //   this.hideElementAlert();
-  //   this.transferPartialAddressDataToForm();
-  //   this.enableNumberInput();
-  //   this.enableComplementInput();
-  //   console.log(this.componentsAddress);
-  // }
-
   hideElementAlert() {
-    let alertHTML = document.getElementById("rewriteAlert");
-    alertHTML!.className = "hide";
+    this.keyAlert = true;
+  }
+
+  hideElementChangeBtn() {
+    this.keyChangeBtn = true;
+  }
+
+  enableComplementInput() {
+    this.addressForm.get("complement").enable();
   }
 
   transferFullAddressDataToForm() {
@@ -230,14 +259,6 @@ export class AddressComponent implements OnInit {
     this.addressForm.get("state").setValue(this.componentsAddress[4].short_name);
   }
 
-  // transferPartialAddressDataToForm() {
-  //   this.resetForm();
-  //   this.addressForm.get("street").setValue(this.componentsAddress[0].long_name);
-  //   this.addressForm.get("district").setValue(this.componentsAddress[1].long_name);
-  //   this.addressForm.get("city").setValue(this.componentsAddress[2].long_name);
-  //   this.addressForm.get("state").setValue(this.componentsAddress[3].short_name);
-  // }
-
   resetForm() {
     this.addressForm.get("street").setValue("");
     this.addressForm.get("numberFinal").setValue("");
@@ -246,34 +267,24 @@ export class AddressComponent implements OnInit {
     this.addressForm.get("state").setValue("");
   }
 
-  enableComplementInput() {
-    this.addressForm.get("complement").enable();
-  }
-
-  // enableNumberInput() {
-  //   this.addressForm.get("numberFinal").enable();
-  // }
-
   createDestinationObject() {
     this.destination = {
       lat: this.userLatitude,
       lng: this.userLongitude,
-    }
-    Promise.resolve(this.calculateDistance(this.userLocation, this.destination));
+    };
+    Promise.resolve(
+      this.calculateDistance(this.userLocation, this.destination)
+    );
   }
 
   calculateDistance(origin: Location, location: Location) {
-
     const distanceObject = Promise.resolve(this.distanceService.calculateDistance(origin, location));
-
     distanceObject.then((distance: any) => {
       this.distanceTotal = distance.rows[0].elements[0].distance;
       this.trajectoryObject = {
         origin: distance?.originAddresses[0],
         destination: distance?.destinationAddresses[0]
       };
-      console.log(this.distanceTotal);
-      console.log(this.trajectoryObject);
     })
   }
 
